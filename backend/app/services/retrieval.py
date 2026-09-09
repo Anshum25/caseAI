@@ -1,10 +1,10 @@
-from .providers.llm import GroqLLMProvider
+from .providers.llm import NvidiaLLMProvider
 from .providers.embeddings import GeminiEmbeddingProvider, LocalEmbeddingProvider
 from .providers.vector_store import QdrantVectorStore
 
 class RetrievalService:
     def __init__(self):
-        self.llm = GroqLLMProvider()
+        self.llm = NvidiaLLMProvider()
         self.embeddings = LocalEmbeddingProvider()
         self.vector_store = QdrantVectorStore()
 
