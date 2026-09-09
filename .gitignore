@@ -1,0 +1,21 @@
+node_modules/
+.env
+.env.*
+.DS_Store
+
+# Python
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.so
+
+# Backend specifics
+backend/data/
+backend/qdrant_storage/
+
+# Frontend specifics
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.swc/
