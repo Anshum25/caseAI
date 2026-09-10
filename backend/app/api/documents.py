@@ -18,8 +18,12 @@ async def upload_document(
     document_id = str(uuid.uuid4())
     file_path = os.path.join(PDF_STORAGE_PATH, f"{document_id}.pdf")
     
+    import time
+    t_up_start = time.perf_counter()
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+    t_up_end = time.perf_counter()
+    print(f"[PERF] upload/save: {t_up_end - t_up_start:.2f}s")
         
     # Initialize state
     case_analysis_service.update_state(document_id, {

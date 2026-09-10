@@ -40,14 +40,24 @@ class CaseAnalysisService:
 
     async def process_document_pipeline(self, document_id: str, pdf_path: str):
         try:
+            import time
+            t_total_start = time.perf_counter()
             self.update_state(document_id, {"status": "processing", "progress": 10})
+            
+            # Extract images for the frontend page viewer
+            page_images_dir = os.path.join(PAGES_STORAGE_PATH, document_id)
+            pdf_service.extract_pages_as_images(pdf_path, page_images_dir)
             
             # 1. Use the Hybrid Local Document Processor
             from .providers.document import HybridLocalDocumentProcessor
             print("Extracting text via Hybrid Local-First Pipeline...")
             doc_processor = HybridLocalDocumentProcessor()
             
+            t_doc_extr_start = time.perf_counter()
             chunks = await doc_processor.process_pdf_to_chunks(pdf_path, document_id)
+            t_doc_extr_end = time.perf_counter()
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] document extraction: {t_doc_extr_end - t_doc_extr_start:.2f}s" + "\n")
+            print(f"[PERF] document extraction: {t_doc_extr_end - t_doc_extr_start:.2f}s")
             
             self.update_state(document_id, {"status": "ocr", "progress": 55, "total_pages": len(chunks)})
             
@@ -68,22 +78,39 @@ class CaseAnalysisService:
                 return
             
             # 3. Extract Metadata
+            t_meta_start = time.perf_counter()
             metadata = await self.llm.extract_case_metadata(full_text)
+            t_meta_end = time.perf_counter()
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] metadata generation: {t_meta_end - t_meta_start:.2f}s" + "\n")
+            print(f"[PERF] metadata generation: {t_meta_end - t_meta_start:.2f}s")
 
             self.update_state(document_id, {"status": "indexing", "progress": 65})
 
             # 4. Create Embeddings and Store in Qdrant
+            t_emb_start = time.perf_counter()
             if chunks:
                 chunk_texts = [c["text"] for c in chunks]
                 emb_list = await self.embeddings.embed_texts(chunk_texts)
+                t_emb_end = time.perf_counter()
+                with open("perf.log", "a") as f_log: f_log.write(f"[PERF] embeddings: {t_emb_end - t_emb_start:.2f}s" + "\n")
+                print(f"[PERF] embeddings: {t_emb_end - t_emb_start:.2f}s")
+
+                t_qdrant_start = time.perf_counter()
                 # Ensure collection exists and has right size
                 self.vector_store.init_collection(vector_size=len(emb_list[0]))
                 self.vector_store.insert_chunks(document_id, chunks, emb_list)
+                t_qdrant_end = time.perf_counter()
+                with open("perf.log", "a") as f_log: f_log.write(f"[PERF] qdrant indexing: {t_qdrant_end - t_qdrant_start:.2f}s" + "\n")
+                print(f"[PERF] qdrant indexing: {t_qdrant_end - t_qdrant_start:.2f}s")
 
             self.update_state(document_id, {"status": "summarizing", "progress": 85})
 
             # 5. Generate Case Summary
+            t_summ_start = time.perf_counter()
             summary = await self.llm.generate_summary(full_text)
+            t_summ_end = time.perf_counter()
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] summary generation: {t_summ_end - t_summ_start:.2f}s" + "\n")
+            print(f"[PERF] summary generation: {t_summ_end - t_summ_start:.2f}s")
             
             # Save summary to state
             self.update_state(document_id, {
@@ -92,6 +119,10 @@ class CaseAnalysisService:
                 "metadata": metadata,
                 "summary": summary
             })
+            
+            t_total_end = time.perf_counter()
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] TOTAL: {t_total_end - t_total_start:.2f}s" + "\n")
+            print(f"[PERF] TOTAL: {t_total_end - t_total_start:.2f}s")
 
         except Exception as e:
             print(f"Error processing document {document_id}: {e}")

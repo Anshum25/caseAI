@@ -153,16 +153,37 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
         from PIL import Image
         import io
         import re
+        import time
 
+        t_load_start = time.perf_counter()
         doc = pymupdf.open(file_path)
+        t_load_end = time.perf_counter()
+        with open("perf.log", "a") as f_log: f_log.write(f"[PERF] PDF page loading: {t_load_end - t_load_start:.2f}s" + "\n")
+        print(f"[PERF] PDF page loading: {t_load_end - t_load_start:.2f}s")
+        
         chunks = []
+        
+        total_pages = len(doc)
+        native_pages = 0
+        tesseract_pages = 0
+        vision_pages = 0
+        
+        t_native_total = 0.0
+        t_tesseract_total = 0.0
+        t_vision_total = 0.0
+        
+        slowest_tesseract_time = 0.0
+        slowest_tesseract_page = 0
         
         for i in range(len(doc)):
             page_num = i + 1
             page = doc.load_page(i)
             
             # 1. Native Extraction
+            t_nat_start = time.perf_counter()
             native_text = page.get_text()
+            t_nat_end = time.perf_counter()
+            t_native_total += (t_nat_end - t_nat_start)
             
             # Check if text is usable (e.g., > 50 characters of actual alphanumeric text)
             alphanumeric_count = sum(c.isalnum() for c in native_text)
@@ -177,9 +198,11 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
                     "extraction_method": "native_pdf",
                     "ocr_status": "success"
                 })
+                native_pages += 1
                 continue
                 
             # 2. Tesseract OCR
+            t_tess_start = time.perf_counter()
             try:
                 # Point pytesseract to the default Windows installation path
                 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -192,6 +215,13 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
                 ocr_text = pytesseract.image_to_string(img, lang="eng+hin+guj")
                 alphanumeric_count_ocr = sum(c.isalnum() for c in ocr_text)
                 
+                t_tess_end = time.perf_counter()
+                t_tess = t_tess_end - t_tess_start
+                t_tesseract_total += t_tess
+                if t_tess > slowest_tesseract_time:
+                    slowest_tesseract_time = t_tess
+                    slowest_tesseract_page = page_num
+                
                 if alphanumeric_count_ocr > 50:
                     chunks.append({
                         "document_id": document_id,
@@ -202,11 +232,19 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
                         "extraction_method": "tesseract_ocr",
                         "ocr_status": "success"
                     })
+                    tesseract_pages += 1
                     continue
             except Exception as e:
+                t_tess_end = time.perf_counter()
+                t_tess = t_tess_end - t_tess_start
+                t_tesseract_total += t_tess
+                if t_tess > slowest_tesseract_time:
+                    slowest_tesseract_time = t_tess
+                    slowest_tesseract_page = page_num
                 print(f"Tesseract failed on page {page_num}: {e}")
                 
             # 3. Nvidia Vision Fallback (only for difficult pages)
+            t_vis_start = time.perf_counter()
             try:
                 import requests
                 import base64
@@ -257,6 +295,7 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
                     "extraction_method": "nvidia_vision",
                     "ocr_status": "success" if nvidia_text else "failed"
                 })
+                vision_pages += 1
             except Exception as e:
                 print(f"Nvidia Fallback failed on page {page_num}: {e}")
                 chunks.append({
@@ -268,6 +307,27 @@ class HybridLocalDocumentProcessor(DocumentProcessor):
                     "extraction_method": "failed",
                     "ocr_status": "failed"
                 })
+            finally:
+                t_vis_end = time.perf_counter()
+                t_vision_total += (t_vis_end - t_vis_start)
+
+        with open("perf.log", "a") as f_log: f_log.write(f"[PERF] PyMuPDF native extraction total: {t_native_total:.2f}s" + "\n")
+        print(f"[PERF] PyMuPDF native extraction total: {t_native_total:.2f}s")
+        with open("perf.log", "a") as f_log: f_log.write(f"[PERF] Tesseract OCR total: {t_tesseract_total:.2f}s" + "\n")
+        print(f"[PERF] Tesseract OCR total: {t_tesseract_total:.2f}s")
+        with open("perf.log", "a") as f_log: f_log.write(f"[PERF] NVIDIA Vision fallback total: {t_vision_total:.2f}s" + "\n")
+        print(f"[PERF] NVIDIA Vision fallback total: {t_vision_total:.2f}s")
+        with open("perf.log", "a") as f_log: f_log.write(f"[PERF] OCR Stats: total pages: {total_pages}, native-text pages: {native_pages}, Tesseract pages: {tesseract_pages}, NVIDIA Vision fallback pages: {vision_pages}" + "\n")
+        print(f"[PERF] OCR Stats: total pages: {total_pages}, native-text pages: {native_pages}, Tesseract pages: {tesseract_pages}, NVIDIA Vision fallback pages: {vision_pages}")
+        if tesseract_pages > 0:
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] average Tesseract time/page: {t_tesseract_total / tesseract_pages:.2f}s" + "\n")
+            print(f"[PERF] average Tesseract time/page: {t_tesseract_total / tesseract_pages:.2f}s")
+        if slowest_tesseract_page > 0:
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] slowest Tesseract page: {slowest_tesseract_page} ({slowest_tesseract_time:.2f}s)" + "\n")
+            print(f"[PERF] slowest Tesseract page: {slowest_tesseract_page} ({slowest_tesseract_time:.2f}s)")
+        if vision_pages > 0:
+            with open("perf.log", "a") as f_log: f_log.write(f"[PERF] average Vision time/page: {t_vision_total / vision_pages:.2f}s" + "\n")
+            print(f"[PERF] average Vision time/page: {t_vision_total / vision_pages:.2f}s")
 
         return chunks
 
