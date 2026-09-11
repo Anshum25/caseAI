@@ -37,6 +37,34 @@ async def upload_document(
     
     return {"document_id": document_id, "status": "processing"}
 
+@router.get("/history")
+async def get_history():
+    history = case_analysis_service.get_history()
+    return {"history": history}
+
+@router.get("/{document_id}")
+async def get_document(document_id: str):
+    # Prevent path traversal by ensuring it's a valid UUID
+    try:
+        uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid document ID format")
+
+    state = case_analysis_service.read_state(document_id)
+    if state.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    return {
+        "document_id": state.get("document_id"),
+        "filename": state.get("filename"),
+        "status": state.get("status"),
+        "created_at": state.get("created_at"),
+        "page_count": state.get("total_pages", 0),
+        "metadata": state.get("metadata", {}),
+        "summary": state.get("summary", ""),
+        "progress": state.get("progress", 0)
+    }
+
 @router.get("/{document_id}/status")
 async def get_document_status(document_id: str):
     state = case_analysis_service.read_state(document_id)

@@ -252,3 +252,14 @@
 [PERF CHAT] groq request: 2.39s
 [PERF CHAT] response parsing: 0.00s
 [PERF CHAT] TOTAL: 2.45s
+[PERF] PDF page loading: 0.01s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 14, native-text pages: 14, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.10s
+[PERF] metadata generation: 2.17s
+[PERF] embeddings: 1.05s
+[PERF] qdrant indexing: 0.26s
+[PERF] summary generation: 16.94s
+[PERF] TOTAL: 21.93s

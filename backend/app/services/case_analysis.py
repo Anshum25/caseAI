@@ -1,5 +1,8 @@
 import os
 import json
+import uuid
+import datetime
+from datetime import timezone
 from .pdf_service import pdf_service
 from .providers.llm import GroqLLMProvider
 from .providers.embeddings import LocalEmbeddingProvider
@@ -33,10 +36,67 @@ class CaseAnalysisService:
     def update_state(self, document_id: str, updates: dict):
         state = self.read_state(document_id)
         if state.get("status") == "not_found":
-            state = {"document_id": document_id}
+            state = {
+                "document_id": document_id,
+                "created_at": datetime.datetime.now(timezone.utc).isoformat()
+            }
         state.update(updates)
         with open(self.get_state_path(document_id), "w", encoding="utf-8") as f:
             json.dump(state, f, indent=2)
+
+    def get_history(self) -> list:
+        history = []
+        if not os.path.exists(STATE_STORAGE_PATH):
+            return history
+            
+        for filename in os.listdir(STATE_STORAGE_PATH):
+            if not filename.endswith(".json"):
+                continue
+                
+            file_path = os.path.join(STATE_STORAGE_PATH, filename)
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    state = json.load(f)
+                    
+                # Skip invalid states
+                if not isinstance(state, dict) or "document_id" not in state:
+                    continue
+                    
+                # Determine created_at (fallback to mtime if missing)
+                created_at = state.get("created_at")
+                if not created_at:
+                    mtime = os.path.getmtime(file_path)
+                    created_at = datetime.datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+                    
+                # Create a lightweight record (no summary)
+                record = {
+                    "document_id": state.get("document_id"),
+                    "filename": state.get("filename", "Unknown Document"),
+                    "status": state.get("status", "unknown"),
+                    "created_at": created_at,
+                    "page_count": state.get("total_pages", 0),
+                }
+                
+                # Include metadata if present
+                if "metadata" in state and isinstance(state["metadata"], dict):
+                    metadata = state["metadata"]
+                    record.update({
+                        "case_number": metadata.get("case_number"),
+                        "case_type": metadata.get("case_type"),
+                        "court": metadata.get("court"),
+                        "petitioners": metadata.get("petitioners", []),
+                        "respondents": metadata.get("respondents", []),
+                        "decision_date": metadata.get("date_of_order") or metadata.get("date_of_judgment")
+                    })
+                    
+                history.append(record)
+            except Exception as e:
+                print(f"Warning: Failed to read state file {filename}: {e}")
+                continue
+                
+        # Sort descending by created_at
+        history.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        return history
 
     async def process_document_pipeline(self, document_id: str, pdf_path: str):
         try:

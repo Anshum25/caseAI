@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import MarkdownRenderer from '../ui/MarkdownRenderer';
 
 type Status = 'uploading' | 'processing_scanned_pages' | 'extracting_case_information' | 'creating_searchable_index' | 'generating_summary' | 'ready' | 'failed' | 'not_found';
@@ -149,7 +150,6 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Main Dashboard ──────────────────────────────────────────────────────────
 export default function CaseDashboard({ documentId }: { documentId: string }) {
   const [status, setStatus] = useState<Status>('uploading');
   const [progress, setProgress] = useState(0);
@@ -157,30 +157,20 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
   const [metadata, setMetadata] = useState<any>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const fetchStatus = async () => {
+  const fetchDocument = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/documents/${documentId}/status`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/documents/${documentId}`);
       if (res.ok) {
         const data = await res.json();
         setStatus(data.status);
-        setProgress(data.progress);
+        setProgress(data.progress || 100);
         
-        if (data.status === 'ready' && !summary) {
-          fetchSummary();
+        if (data.status === 'ready') {
+          setSummary(data.summary);
+          setMetadata(data.metadata);
         }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const fetchSummary = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/documents/${documentId}/summary`);
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data.summary);
-        if (data.metadata) setMetadata(data.metadata);
+      } else if (res.status === 404) {
+        setStatus('not_found');
       }
     } catch (e) {
       console.error(e);
@@ -188,12 +178,14 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
   };
 
   useEffect(() => {
+    fetchDocument();
+    
     let interval: NodeJS.Timeout;
     if (status !== 'ready' && status !== 'failed' && status !== 'not_found') {
-      interval = setInterval(fetchStatus, 2000);
+      interval = setInterval(fetchDocument, 2000);
     }
     return () => clearInterval(interval);
-  }, [status]);
+  }, [documentId, status]);
 
   if (status === 'failed' || status === 'not_found') {
     return (
@@ -266,6 +258,15 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/history"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-2xs"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              View History
+            </Link>
             <button
               onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200/80 rounded-xl hover:bg-blue-100/70 transition-all shadow-2xs"
@@ -385,7 +386,9 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
 }
 
 function ChatInterface({ documentId }: { documentId: string }) {
-  const [messages, setMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([]);
+  const [messages, setMessages] = useState<{ role: string; content: string; citations?: any[] }[]>([
+    { role: 'ai', content: 'Hello! How can I assist you with this case?' }
+  ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -393,6 +396,12 @@ function ChatInterface({ documentId }: { documentId: string }) {
   const scrollToBottom = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    // Reset chat when documentId changes to maintain isolation between cases
+    setMessages([{ role: 'ai', content: 'Hello! How can I assist you with this case?' }]);
+    setInput('');
+  }, [documentId]);
 
   useEffect(() => {
     scrollToBottom();
