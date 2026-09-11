@@ -263,3 +263,14 @@
 [PERF] qdrant indexing: 0.26s
 [PERF] summary generation: 16.94s
 [PERF] TOTAL: 21.93s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 19, native-text pages: 19, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.06s
+[PERF] metadata generation: 2.50s
+[PERF] embeddings: 1.25s
+[PERF] qdrant indexing: 0.18s
+[PERF] summary generation: 14.93s
+[PERF] TOTAL: 27.60s

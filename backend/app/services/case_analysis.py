@@ -62,6 +62,10 @@ class CaseAnalysisService:
                 if not isinstance(state, dict) or "document_id" not in state:
                     continue
                     
+                # Only show completed cases in history
+                if state.get("status") != "ready":
+                    continue
+                    
                 # Determine created_at (fallback to mtime if missing)
                 created_at = state.get("created_at")
                 if not created_at:
@@ -97,6 +101,20 @@ class CaseAnalysisService:
         # Sort descending by created_at
         history.sort(key=lambda x: x.get("created_at", ""), reverse=True)
         return history
+
+    def detect_document_language(self, text: str) -> str:
+        """Detect document language using Unicode character ranges.
+        Returns: 'gujarati', 'hindi', or 'english'
+        """
+        # Sample first 3000 chars for speed
+        sample = text[:3000]
+        gujarati_count = sum(1 for c in sample if '\u0A80' <= c <= '\u0AFF')
+        devanagari_count = sum(1 for c in sample if '\u0900' <= c <= '\u097F')
+        if gujarati_count >= 30:
+            return "gujarati"
+        elif devanagari_count >= 30:
+            return "hindi"
+        return "english"
 
     async def process_document_pipeline(self, document_id: str, pdf_path: str):
         try:
@@ -173,11 +191,43 @@ class CaseAnalysisService:
                 with open("perf.log", "a") as f_log: f_log.write(f"[PERF] qdrant indexing: {t_qdrant_end - t_qdrant_start:.2f}s" + "\n")
                 print(f"[PERF] qdrant indexing: {t_qdrant_end - t_qdrant_start:.2f}s")
 
+            # 5. Detect language and ask user for summary language preference
+            detected_lang = self.detect_document_language(full_text)
+            print(f"Detected document language: {detected_lang}")
+
+            if detected_lang in ("gujarati", "hindi"):
+                # Pause pipeline — ask user which language they want the summary in
+                self.update_state(document_id, {
+                    "status": "awaiting_language_choice",
+                    "progress": 80,
+                    "detected_language": detected_lang
+                })
+
+                # Wait up to 90 seconds for the user to choose
+                import asyncio
+                waited = 0
+                chosen_lang = None
+                while waited < 90:
+                    await asyncio.sleep(1)
+                    waited += 1
+                    current_state = self.read_state(document_id)
+                    if current_state.get("summary_language"):
+                        chosen_lang = current_state["summary_language"]
+                        break
+
+                if not chosen_lang:
+                    print(f"No language chosen within 90s — defaulting to English")
+                    chosen_lang = "english"
+            else:
+                # English document — no prompt needed
+                chosen_lang = "english"
+                self.update_state(document_id, {"detected_language": "english"})
+
             self.update_state(document_id, {"status": "summarizing", "progress": 85})
 
-            # 5. Generate Case Summary
+            # 6. Generate Case Summary in chosen language
             t_summ_start = time.perf_counter()
-            summary = await self.llm.generate_summary(full_text)
+            summary = await self.llm.generate_summary(full_text, language=chosen_lang)
             t_summ_end = time.perf_counter()
             with open("perf.log", "a") as f_log: f_log.write(f"[PERF] summary generation: {t_summ_end - t_summ_start:.2f}s" + "\n")
             print(f"[PERF] summary generation: {t_summ_end - t_summ_start:.2f}s")

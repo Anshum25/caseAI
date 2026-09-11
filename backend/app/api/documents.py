@@ -3,9 +3,13 @@ import uuid
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from ..services.case_analysis import case_analysis_service, PDF_STORAGE_PATH, PAGES_STORAGE_PATH
 
 router = APIRouter()
+
+class LanguageChoice(BaseModel):
+    language: str  # "gujarati" | "hindi" | "english"
 
 @router.post("/upload")
 async def upload_document(
@@ -62,8 +66,29 @@ async def get_document(document_id: str):
         "page_count": state.get("total_pages", 0),
         "metadata": state.get("metadata", {}),
         "summary": state.get("summary", ""),
-        "progress": state.get("progress", 0)
+        "progress": state.get("progress", 0),
+        "detected_language": state.get("detected_language")
     }
+
+@router.post("/{document_id}/language")
+async def set_document_language(document_id: str, body: LanguageChoice):
+    """Set the user's preferred summary language. The pipeline waits on this."""
+    try:
+        uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid document ID format")
+
+    state = case_analysis_service.read_state(document_id)
+    if state.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    allowed = {"gujarati", "hindi", "english"}
+    lang = body.language.lower().strip()
+    if lang not in allowed:
+        raise HTTPException(status_code=400, detail=f"Language must be one of: {allowed}")
+
+    case_analysis_service.update_state(document_id, {"summary_language": lang})
+    return {"document_id": document_id, "summary_language": lang}
 
 @router.get("/{document_id}/status")
 async def get_document_status(document_id: str):

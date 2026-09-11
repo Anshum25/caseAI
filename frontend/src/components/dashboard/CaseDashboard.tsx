@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MarkdownRenderer from '../ui/MarkdownRenderer';
 
-type Status = 'uploading' | 'processing_scanned_pages' | 'extracting_case_information' | 'creating_searchable_index' | 'generating_summary' | 'ready' | 'failed' | 'not_found';
+type Status = 'uploading' | 'processing_scanned_pages' | 'extracting_case_information' | 'creating_searchable_index' | 'generating_summary' | 'ready' | 'failed' | 'not_found' | 'awaiting_language_choice';
 
 // ─── Upload New PDF Modal ────────────────────────────────────────────────────
 function UploadModal({ onClose }: { onClose: () => void }) {
@@ -156,6 +156,8 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
   const [summary, setSummary] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<any>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
+  const [languageSubmitting, setLanguageSubmitting] = useState(false);
 
   const fetchDocument = async () => {
     try {
@@ -164,6 +166,7 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
         const data = await res.json();
         setStatus(data.status);
         setProgress(data.progress || 100);
+        if (data.detected_language) setDetectedLanguage(data.detected_language);
         
         if (data.status === 'ready') {
           setSummary(data.summary);
@@ -174,6 +177,21 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleLanguageChoice = async (language: string) => {
+    setLanguageSubmitting(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/documents/${documentId}/language`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language }),
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLanguageSubmitting(false);
     }
   };
 
@@ -209,6 +227,51 @@ export default function CaseDashboard({ documentId }: { documentId: string }) {
           Upload Another PDF
         </button>
         {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} />}
+      </div>
+    );
+  }
+
+  if (status === 'awaiting_language_choice') {
+    const langLabel = detectedLanguage === 'gujarati' ? 'Gujarati (ગુજરાતી)'
+      : detectedLanguage === 'hindi' ? 'Hindi (हिंदी)'
+      : 'Original Language';
+    const langValue = detectedLanguage || 'gujarati';
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6">
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Choose Summary Language</h2>
+          <p className="text-sm text-slate-500 mb-1">
+            We detected this document is in <span className="font-semibold text-slate-700">{langLabel}</span>.
+          </p>
+          <p className="text-xs text-slate-400 mb-7">In which language would you like the case summary?</p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              disabled={languageSubmitting}
+              onClick={() => handleLanguageChoice(langValue)}
+              className="w-full py-3 px-5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm text-sm"
+            >
+              {langLabel}
+            </button>
+            <button
+              disabled={languageSubmitting}
+              onClick={() => handleLanguageChoice('english')}
+              className="w-full py-3 px-5 bg-slate-100 text-slate-800 font-semibold rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-all text-sm border border-slate-200"
+            >
+              English
+            </button>
+          </div>
+
+          {languageSubmitting && (
+            <p className="mt-5 text-xs text-blue-600 animate-pulse">Generating your summary...</p>
+          )}
+        </div>
       </div>
     );
   }

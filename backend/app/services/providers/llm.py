@@ -10,7 +10,7 @@ class LLMProvider(ABC):
         pass
         
     @abstractmethod
-    async def generate_summary(self, context: str) -> str:
+    async def generate_summary(self, context: str, language: str = "english") -> str:
         pass
         
     @abstractmethod
@@ -216,20 +216,40 @@ class GroqLLMProvider(LLMProvider):
                     return {}
         return {}
 
-    async def generate_summary(self, context: str) -> str:
+    async def generate_summary(self, context: str, language: str = "english") -> str:
         # Cap context to ~13k characters (approx 3,250 tokens) to safely fit within Groq 8,000 TPM limit
         if len(context) > 13000:
             summary_context = context[:10000] + "\n\n...[Middle section omitted for context length]...\n\n" + context[-3000:]
         else:
             summary_context = context
 
+        # Build language-specific instruction
+        lang_lower = language.lower()
+        if lang_lower == "gujarati":
+            lang_instruction = (
+                "LANGUAGE: Write the ENTIRE summary in Gujarati script (ગુજરાતી). "
+                "Use Gujarati for all headings, explanations, arguments, and court reasoning. "
+                "Only keep proper nouns (names, case numbers, court names) in their original form. "
+                "Do NOT write in English."
+            )
+        elif lang_lower == "hindi":
+            lang_instruction = (
+                "LANGUAGE: Write the ENTIRE summary in Hindi (हिंदी) using Devanagari script. "
+                "Use Hindi for all headings, explanations, arguments, and court reasoning. "
+                "Only keep proper nouns (names, case numbers, court names) in their original form. "
+                "Do NOT write in English."
+            )
+        else:
+            lang_instruction = (
+                "LANGUAGE: Write the entire summary in clear, professional English."
+            )
+
         prompt = f"""
         Based on the provided case text, generate a highly detailed and comprehensive case summary formatted in clean Markdown.
         IMPORTANT: Your summary must be incredibly thorough, equivalent to a 2 to 3 page long document. 
         Cover ALL important data, arguments, evidence, and court reasonings in extreme depth. Do not miss any details.
         
-        BILINGUAL & LANGUAGE HANDLING:
-        If the case text contains Gujarati, Hindi, or is bilingual (English + Gujarati/Hindi), write the summary reflecting the document's language, preserving original names, quotes, Gujarati terms, and key legal arguments in Gujarati script (with English translations/headings where helpful). Do not strip out or force purely English output for Gujarati content.
+        {lang_instruction}
         
         Organize the summary using clear Markdown headings (e.g., ## Executive Summary, ## Facts, ## Court's Reasoning, etc).
         Every important section should have internal page references like [p. 17].
@@ -240,7 +260,7 @@ class GroqLLMProvider(LLMProvider):
         try:
             response = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "You are a bilingual legal AI assistant fluent in English, Gujarati, and Hindi. You output detailed Markdown summaries preserving original scripts when present."},
+                    {"role": "system", "content": "You are a multilingual legal AI assistant fluent in English, Gujarati, and Hindi. You output detailed Markdown summaries in the language requested by the user."},
                     {"role": "user", "content": prompt}
                 ],
                 model=self.model,
