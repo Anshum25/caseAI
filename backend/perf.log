@@ -1,0 +1,254 @@
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 16, native-text pages: 16, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.11s
+[PERF] metadata generation: 47.02s
+[PERF] embeddings: 2.08s
+[PERF] qdrant indexing: 0.17s
+[PERF] summary generation: 164.09s
+[PERF] TOTAL: 215.38s
+[PERF CHAT] query embedding: 0.40s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 12
+[PERF CHAT] context chars: 14912
+[PERF CHAT] estimated context tokens: 3728
+[PERF CHAT] prompt construction: 0.00s
+[PERF] PDF page loading: 0.00s
+[PERF] PDF page loading: 0.00s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.07s
+[PERF] metadata generation: 11.27s
+[PERF] embeddings: 1.71s
+[PERF] qdrant indexing: 0.16s
+
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.15s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.35s
+[PERF] metadata generation: 2.11s
+[PERF] embeddings: 1.18s
+[PERF] qdrant indexing: 0.15s
+[PERF] summary generation: 14.00s
+[PERF] TOTAL: 19.74s
+[PERF CHAT] query embedding: 0.04s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8256
+[PERF CHAT] estimated context tokens: 2064
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 0.67s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 0.72s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.07s
+[PERF] metadata generation: 2.05s
+[PERF] embeddings: 1.68s
+[PERF] qdrant indexing: 0.17s
+[PERF] summary generation: 0.06s
+[PERF] TOTAL: 5.50s
+[PERF CHAT] query embedding: 0.02s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8256
+[PERF CHAT] estimated context tokens: 2064
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 16.70s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 16.73s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.06s
+[PERF] metadata generation: 2.28s
+[PERF] embeddings: 1.39s
+[PERF] qdrant indexing: 0.22s
+[PERF] summary generation: 0.06s
+[PERF] TOTAL: 5.76s
+[PERF CHAT] query embedding: 0.03s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8256
+[PERF CHAT] estimated context tokens: 2064
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 7.94s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 7.99s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.05s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.08s
+[PERF] metadata generation: 2.40s
+[PERF] embeddings: 1.21s
+[PERF] qdrant indexing: 0.17s
+[PERF] summary generation: 23.03s
+[PERF] TOTAL: 28.76s
+[PERF CHAT] query embedding: 0.03s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8256
+[PERF CHAT] estimated context tokens: 2064
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 31.82s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 31.87s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.07s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 9, native-text pages: 9, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.08s
+[PERF] metadata generation: 1.72s
+[PERF] embeddings: 0.58s
+[PERF] qdrant indexing: 0.05s
+[PERF] summary generation: 4.10s
+[PERF] TOTAL: 7.40s
+[PERF CHAT] query embedding: 0.03s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 14312
+[PERF CHAT] estimated context tokens: 3578
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 5.10s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 5.15s
+[PERF CHAT] query embedding: 0.03s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 14312
+[PERF CHAT] estimated context tokens: 3578
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 0.86s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 0.91s
+[PERF CHAT] query embedding: 0.03s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 6030
+[PERF CHAT] estimated context tokens: 1507
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 0.68s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 0.72s
+[PERF CHAT] query embedding: 0.02s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 6030
+[PERF CHAT] estimated context tokens: 1507
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 0.57s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 0.61s
+[PERF CHAT] query embedding: 0.02s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 9328
+[PERF CHAT] estimated context tokens: 2332
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 2.23s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 2.27s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.04s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.04s
+[PERF] metadata generation: 3.21s
+[PERF] embeddings: 1.27s
+[PERF] qdrant indexing: 0.14s
+[PERF] summary generation: 21.95s
+[PERF] TOTAL: 28.77s
+[PERF CHAT] query embedding: 0.04s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 9367
+[PERF CHAT] estimated context tokens: 2341
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 1.53s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 1.58s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.04s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.05s
+[PERF] metadata generation: 8.86s
+[PERF] embeddings: 1.05s
+[PERF] qdrant indexing: 0.19s
+[PERF] summary generation: 27.96s
+[PERF] TOTAL: 40.54s
+[PERF CHAT] query embedding: 0.04s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8186
+[PERF CHAT] estimated context tokens: 2046
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 2.10s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 2.16s
+[PERF CHAT] query embedding: 0.02s
+[PERF CHAT] qdrant search: 0.02s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8851
+[PERF CHAT] estimated context tokens: 2212
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 2.47s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 2.55s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.08s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.09s
+[PERF] metadata generation: 8.32s
+[PERF] embeddings: 2.00s
+[PERF] qdrant indexing: 0.22s
+[PERF] summary generation: 18.29s
+[PERF] TOTAL: 33.11s
+[PERF CHAT] query embedding: 0.07s
+[PERF CHAT] qdrant search: 0.02s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8186
+[PERF CHAT] estimated context tokens: 2046
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 10.12s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 10.21s
+[PERF] PDF page loading: 0.00s
+[PERF] PyMuPDF native extraction total: 0.04s
+[PERF] Tesseract OCR total: 0.00s
+[PERF] NVIDIA Vision fallback total: 0.00s
+[PERF] OCR Stats: total pages: 20, native-text pages: 20, Tesseract pages: 0, NVIDIA Vision fallback pages: 0
+[PERF] document extraction: 0.05s
+[PERF] metadata generation: 2.57s
+[PERF] embeddings: 1.26s
+[PERF] qdrant indexing: 0.33s
+[PERF] summary generation: 8.59s
+[PERF] TOTAL: 14.70s
+[PERF CHAT] query embedding: 0.04s
+[PERF CHAT] qdrant search: 0.01s
+[PERF CHAT] retrieved chunks: 8
+[PERF CHAT] context chars: 8259
+[PERF CHAT] estimated context tokens: 2064
+[PERF CHAT] prompt construction: 0.00s
+[PERF CHAT] groq request: 2.39s
+[PERF CHAT] response parsing: 0.00s
+[PERF CHAT] TOTAL: 2.45s

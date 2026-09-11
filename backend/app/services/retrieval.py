@@ -1,10 +1,10 @@
-from .providers.llm import NvidiaLLMProvider
+from .providers.llm import GroqLLMProvider
 from .providers.embeddings import GeminiEmbeddingProvider, LocalEmbeddingProvider
 from .providers.vector_store import QdrantVectorStore
 
 class RetrievalService:
     def __init__(self):
-        self.llm = NvidiaLLMProvider()
+        self.llm = GroqLLMProvider()
         self.embeddings = LocalEmbeddingProvider()
         self.vector_store = QdrantVectorStore()
 
@@ -21,7 +21,7 @@ class RetrievalService:
         
         # 2. Search Qdrant
         t_qsearch_start = time.perf_counter()
-        retrieved_chunks = self.vector_store.search(document_id, query_emb, limit=12)
+        retrieved_chunks = self.vector_store.search(document_id, query_emb, limit=8)
         t_qsearch_end = time.perf_counter()
         with open("perf.log", "a") as f_log: f_log.write(f"[PERF CHAT] qdrant search: {t_qsearch_end - t_qsearch_start:.2f}s" + "\n")
         print(f"[PERF CHAT] qdrant search: {t_qsearch_end - t_qsearch_start:.2f}s")

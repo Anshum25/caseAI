@@ -1,7 +1,7 @@
 import os
 import json
 from .pdf_service import pdf_service
-from .providers.llm import NvidiaLLMProvider
+from .providers.llm import GroqLLMProvider
 from .providers.embeddings import LocalEmbeddingProvider
 from .providers.vector_store import QdrantVectorStore
 
@@ -15,7 +15,7 @@ os.makedirs(STATE_STORAGE_PATH, exist_ok=True)
 
 class CaseAnalysisService:
     def __init__(self):
-        self.llm = NvidiaLLMProvider()
+        self.llm = GroqLLMProvider()
         self.embeddings = LocalEmbeddingProvider()
         self.vector_store = QdrantVectorStore()
         
@@ -77,9 +77,19 @@ class CaseAnalysisService:
                 })
                 return
             
-            # 3. Extract Metadata
+            # 3. Extract Metadata (Compact Context: First 5 pages + Last 2 pages)
             t_meta_start = time.perf_counter()
-            metadata = await self.llm.extract_case_metadata(full_text)
+            if len(chunks) <= 7:
+                selected_chunks = chunks
+            else:
+                selected_chunks = chunks[:5] + chunks[-2:]
+            
+            metadata_text = ""
+            for chunk in selected_chunks:
+                if chunk["text"].strip():
+                    metadata_text += f"\n--- Page {chunk['page_number']} ---\n{chunk['text']}"
+
+            metadata = await self.llm.extract_case_metadata(metadata_text)
             t_meta_end = time.perf_counter()
             with open("perf.log", "a") as f_log: f_log.write(f"[PERF] metadata generation: {t_meta_end - t_meta_start:.2f}s" + "\n")
             print(f"[PERF] metadata generation: {t_meta_end - t_meta_start:.2f}s")
